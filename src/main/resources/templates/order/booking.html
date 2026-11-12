@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('预约下单')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container">
+    <div class="page-head">
+        <div class="crumbs">
+            <a th:href="@{/}">首页</a><span>/</span>
+            <a th:href="@{/services}">全部服务</a><span>/</span>
+            <a th:href="@{/services/{id}(id=${service.id})}" th:text="${service.name}">日常保洁</a><span>/</span>
+            <span>预约下单</span>
+        </div>
+        <h1>填写预约信息</h1>
+        <p class="section-sub">提交后服务人员会尽快接单，接单后可查看服务人员信息</p>
+    </div>
+
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <form th:action="@{/orders}" th:object="${form}" method="post">
+        <input type="hidden" th:field="*{serviceId}">
+
+        <div class="detail-grid" style="align-items:start;">
+            <div>
+                <div class="card card-pad mb-3">
+                    <h3 class="mb-2">预约时间</h3>
+                    <div class="field-row">
+                        <div class="field">
+                            <label class="form-label" for="appointmentDate">上门日期 <span class="req">*</span></label>
+                            <input class="form-control" type="date" id="appointmentDate"
+                                   th:field="*{appointmentDate}" th:min="${today}">
+                            <div class="form-error" th:if="${#fields.hasErrors('appointmentDate')}"
+                                 th:errors="*{appointmentDate}"></div>
+                        </div>
+                        <div class="field">
+                            <label class="form-label">服务数量 <span class="req">*</span></label>
+                            <div class="form-row-inline">
+                                <input class="form-control" type="number" id="quantity" min="1" max="20"
+                                       th:field="*{quantity}" th:attr="data-price=${service.price}"
+                                       style="max-width:110px;">
+                                <span class="text-sm text-muted" th:text="${'× ' + service.priceUnit}">× 次</span>
+                            </div>
+                            <div class="form-error" th:if="${#fields.hasErrors('quantity')}"
+                                 th:errors="*{quantity}"></div>
+                        </div>
+                    </div>
+
+                    <div class="field mt-2">
+                        <label class="form-label">上门时段 <span class="req">*</span></label>
+                        <div class="slot-grid">
+                            <label class="slot" th:each="t : ${timeSlots}">
+                                <input type="radio" th:field="*{appointmentTime}" th:value="${t}">
+                                <span th:text="${t}">08:00-10:00</span>
+                            </label>
+                        </div>
+                        <div class="form-error" th:if="${#fields.hasErrors('appointmentTime')}"
+                             th:errors="*{appointmentTime}"></div>
+                        <div class="form-hint">服务人员会在上门前 30 分钟电话确认</div>
+                    </div>
+                </div>
+
+                <div class="card card-pad mb-3">
+                    <div class="flex-between mb-2">
+                        <h3 class="mb-0">服务地址</h3>
+                        <a class="text-sm" th:href="@{/profile}" target="_blank">管理地址簿</a>
+                    </div>
+
+                    <div class="field mb-2" th:if="${addresses.size() > 0}">
+                        <label class="form-label" for="addressPicker">从地址簿选择</label>
+                        <select class="form-control" th:field="*{addressId}" id="addressPicker">
+                            <option value="">手动填写新地址</option>
+                            <option th:each="a : ${addresses}" th:value="${a.id}"
+                                    th:attr="data-name=${a.contactName},data-phone=${a.contactPhone},data-region=${a.region},data-detail=${a.detail}"
+                                    th:text="${a.contactName + ' · ' + a.region + ' ' + a.detail}">张伟 · 阳光花园 501</option>
+                        </select>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field">
+                            <label class="form-label" for="contactName">联系人 <span class="req">*</span></label>
+                            <input class="form-control" type="text" id="contactName" th:field="*{contactName}"
+                                   placeholder="请输入联系人姓名">
+                            <div class="form-error" th:if="${#fields.hasErrors('contactName')}"
+                                 th:errors="*{contactName}"></div>
+                        </div>
+                        <div class="field">
+                            <label class="form-label" for="contactPhone">联系电话 <span class="req">*</span></label>
+                            <input class="form-control" type="tel" id="contactPhone" th:field="*{contactPhone}"
+                                   placeholder="用于服务人员联系您">
+                            <div class="form-error" th:if="${#fields.hasErrors('contactPhone')}"
+                                 th:errors="*{contactPhone}"></div>
+                        </div>
+                    </div>
+
+                    <div class="field mt-2">
+                        <label class="form-label" for="region">小区 / 街道 <span class="req">*</span></label>
+                        <input class="form-control" type="text" id="region" th:field="*{region}"
+                               placeholder="例如：阳光花园小区 3 号楼">
+                        <div class="form-error" th:if="${#fields.hasErrors('region')}"
+                             th:errors="*{region}"></div>
+                    </div>
+
+                    <div class="field mt-2">
+                        <label class="form-label" for="detail">门牌号等详细地址 <span class="req">*</span></label>
+                        <input class="form-control" type="text" id="detail" th:field="*{detail}"
+                               placeholder="例如：2 单元 501">
+                        <div class="form-error" th:if="${#fields.hasErrors('detail')}"
+                             th:errors="*{detail}"></div>
+                    </div>
+                </div>
+
+                <div class="card card-pad">
+                    <h3 class="mb-2">备注（选填）</h3>
+                    <div class="field">
+                        <textarea class="form-control" th:field="*{remark}" rows="4"
+                                  placeholder="例如：家里有宠物、需要自带梯子、重点清洁厨房油污等"></textarea>
+                        <div class="form-error" th:if="${#fields.hasErrors('remark')}"
+                             th:errors="*{remark}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <aside>
+                <div class="card booking-card">
+                    <div class="flex-gap mb-2">
+                        <span class="hero-slot-icon" th:text="${service.cover}">🧽</span>
+                        <div>
+                            <div style="font-weight:700;" th:text="${service.name}">日常保洁 3 小时</div>
+                            <div class="text-sm text-muted" th:text="${service.duration + ' 分钟'}">180 分钟</div>
+                        </div>
+                    </div>
+
+                    <div class="booking-divider"></div>
+
+                    <div class="flex-between text-sm">
+                        <span class="text-muted">服务单价</span>
+                        <span th:text="${'¥' + service.priceText + ' / ' + service.priceUnit}">¥129 / 次</span>
+                    </div>
+                    <div class="flex-between text-sm mt-1">
+                        <span class="text-muted">数量</span>
+                        <span id="qtyText" th:text="${form.quantity}">1</span>
+                    </div>
+
+                    <div class="booking-divider"></div>
+
+                    <div class="flex-between">
+                        <span class="text-sm text-muted">合计</span>
+                        <span class="price" id="totalPrice" th:text="${'¥' + service.priceText}">¥129</span>
+                    </div>
+
+                    <button class="btn btn-primary btn-block btn-lg mt-2" type="submit">提交预约</button>
+                    <p class="form-hint text-center" style="margin:10px 0 0;">
+                        提交即表示同意平台服务条款，服务完成前不收取费用
+                    </p>
+                </div>
+            </aside>
+        </div>
+    </form>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+<script>
+    (function () {
+        var qty = document.getElementById('quantity');
+        var price = parseFloat(qty ? qty.getAttribute('data-price') : '0') || 0;
+        var qtyText = document.getElementById('qtyText');
+        var total = document.getElementById('totalPrice');
+        function refresh() {
+            var n = parseInt(qty.value || '1', 10);
+            if (isNaN(n) || n < 1) { n = 1; }
+            if (qtyText) { qtyText.textContent = n; }
+            if (total) { total.textContent = '¥' + (price * n).toFixed(price % 1 === 0 ? 0 : 2); }
+        }
+        if (qty) {
+            qty.addEventListener('input', refresh);
+            refresh();
+        }
+    })();
+</script>
+</body>
+</html>

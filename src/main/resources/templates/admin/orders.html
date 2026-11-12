@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/admin :: head('订单管理')}"></head>
+<body>
+<div class="admin-shell">
+    <aside th:replace="~{fragments/admin :: sidebar('orders')}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-head">
+            <div>
+                <h1>订单管理</h1>
+                <div class="sub" th:text="${'共 ' + orders.total + ' 笔订单'}">共 5 笔订单</div>
+            </div>
+        </div>
+
+        <div th:replace="~{fragments/layout :: flash}"></div>
+
+        <div class="panel mb-2">
+            <div class="chip-row mb-2">
+                <a class="chip" th:classappend="${status == null or status.isEmpty() ? 'active' : ''}"
+                   th:href="@{/admin/orders(keyword=${keyword})}">全部</a>
+                <a class="chip" th:each="s : ${statusOptions}"
+                   th:classappend="${status == s.name() ? 'active' : ''}"
+                   th:href="@{/admin/orders(status=${s.name()}, keyword=${keyword})}"
+                   th:text="${s.label}">待接单</a>
+            </div>
+            <form method="get" th:action="@{/admin/orders}" class="filter-bar" style="margin-bottom:0;">
+                <input type="hidden" name="status" th:value="${status}">
+                <input class="form-control grow" type="search" name="keyword" th:value="${keyword}"
+                       placeholder="搜索订单号 / 服务名称 / 联系人 / 手机号">
+                <button class="btn btn-primary" type="submit">搜索</button>
+                <a class="btn btn-ghost" th:href="@{/admin/orders}">重置</a>
+            </form>
+        </div>
+
+        <div class="table-wrap">
+            <table class="table" style="min-width:1040px;">
+                <thead>
+                <tr>
+                    <th>订单号 / 下单时间</th>
+                    <th>服务项目</th>
+                    <th>客户</th>
+                    <th>预约时间</th>
+                    <th>服务人员 / 派单</th>
+                    <th style="text-align:right;">金额</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="o : ${orders.records}">
+                    <td>
+                        <div class="num" th:text="${o.orderNo}">HS2026</div>
+                        <div class="text-sm text-muted"
+                             th:text="${#temporals.format(o.createdAt, 'MM-dd HH:mm')}">11-12 15:00</div>
+                    </td>
+                    <td>
+                        <div th:text="${o.serviceName}">日常保洁</div>
+                        <div class="text-sm text-muted" th:text="${'× ' + o.quantity}">× 1</div>
+                    </td>
+                    <td>
+                        <div th:text="${o.contactName}">张伟</div>
+                        <div class="text-sm text-muted" th:text="${o.contactPhone}">138</div>
+                    </td>
+                    <td class="text-sm">
+                        <div th:text="${#temporals.format(o.appointmentDate, 'MM-dd')}">11-13</div>
+                        <div class="text-muted" th:text="${o.appointmentTime}">09:00-12:00</div>
+                    </td>
+                    <td>
+                        <div th:if="${o.staffId != null}" th:text="${staffNameMap[o.staffId]}">王秀兰</div>
+                        <div th:if="${o.staffId == null}" class="text-sm text-muted">待指派</div>
+                        <form th:if="${o.status == 'PENDING_ACCEPT' or o.status == 'ACCEPTED'}"
+                              th:action="@{/admin/orders/{id}/assign(id=${o.id})}" method="post"
+                              class="form-row-inline" style="margin-top:6px;">
+                            <select class="form-control" name="staffId" required
+                                    style="padding:4px 26px 4px 8px;font-size:.78rem;width:auto;">
+                                <option value="">选择人员</option>
+                                <option th:each="sv : ${staffList}" th:value="${sv.staff.id}"
+                                        th:text="${sv.realName + '（' + sv.staff.jobType + '）'}">王秀兰（保洁）</option>
+                            </select>
+                            <button class="btn btn-outline btn-sm" type="submit"
+                                    style="padding:4px 8px;font-size:.78rem;">派单</button>
+                        </form>
+                    </td>
+                    <td class="num" style="text-align:right;"
+                        th:text="${'¥' + #numbers.formatDecimal(o.amount, 1, 2)}">¥129.00</td>
+                    <td>
+                        <span class="badge" th:classappend="${'badge-' + statusTones[o.status]}"
+                              th:text="${statusLabels[o.status]}">待接单</span>
+                        <div class="text-sm text-muted" th:if="${o.cancelReason != null}"
+                             th:text="${o.cancelReason}">用户取消</div>
+                    </td>
+                    <td>
+                        <div class="table-actions">
+                            <form th:if="${o.status != 'COMPLETED' and o.status != 'CANCELLED'}"
+                                  th:action="@{/admin/orders/{id}/cancel(id=${o.id})}" method="post"
+                                  style="margin:0;" data-confirm="确定取消该订单？此操作不可撤销。">
+                                <input type="hidden" name="reason" value="管理员取消">
+                                <button class="btn btn-danger btn-sm" type="submit">取消</button>
+                            </form>
+                            <span class="text-sm text-muted" th:if="${o.status == 'COMPLETED'}">已结束</span>
+                            <span class="text-sm text-muted" th:if="${o.status == 'CANCELLED'}">已取消</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${orders.records.size() == 0}">
+                    <td colspan="8" class="text-center text-muted" style="padding:40px;">没有符合条件的订单</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" th:if="${orders.pages > 1}">
+            <a class="page-btn" th:classappend="${orders.current <= 1 ? 'disabled' : ''}"
+               th:href="@{/admin/orders(page=${orders.current - 1}, status=${status}, keyword=${keyword})}">上一页</a>
+            <a class="page-btn" th:each="i : ${#numbers.sequence(1, orders.pages)}"
+               th:classappend="${i == orders.current ? 'active' : ''}"
+               th:href="@{/admin/orders(page=${i}, status=${status}, keyword=${keyword})}"
+               th:text="${i}">1</a>
+            <a class="page-btn" th:classappend="${orders.current >= orders.pages ? 'disabled' : ''}"
+               th:href="@{/admin/orders(page=${orders.current + 1}, status=${status}, keyword=${keyword})}">下一页</a>
+        </div>
+    </main>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

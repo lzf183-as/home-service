@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/admin :: head('服务人员')}"></head>
+<body>
+<div class="admin-shell">
+    <aside th:replace="~{fragments/admin :: sidebar('staffs')}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-head">
+            <div>
+                <h1>服务人员</h1>
+                <div class="sub" th:text="${'共 ' + staffViews.size() + ' 位服务人员'}">共 4 位服务人员</div>
+            </div>
+            <a class="btn btn-primary btn-sm" th:href="@{/admin/staffs/new}">+ 新增服务人员</a>
+        </div>
+
+        <div th:replace="~{fragments/layout :: flash}"></div>
+
+        <div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));">
+            <div class="card card-pad" th:each="v : ${staffViews}">
+                <div class="flex-between">
+                    <div class="flex-gap">
+                        <div class="profile-avatar"
+                             style="width:44px;height:44px;font-size:18px;margin:0;"
+                             th:text="${#strings.substring(v.realName, 0, 1)}">王</div>
+                        <div>
+                            <div style="font-weight:700;" th:text="${v.realName}">王秀兰</div>
+                            <div class="text-sm text-muted"
+                                 th:text="${'@' + v.username + ' · ' + v.phone}">@staff · 137</div>
+                        </div>
+                    </div>
+                    <span class="badge" th:classappend="${v.staff.available == 1 ? 'badge-success' : 'badge-muted'}"
+                          th:text="${v.staff.available == 1 ? '接单中' : '休息中'}">接单中</span>
+                </div>
+
+                <div class="meta-row mt-2">
+                    <span class="badge badge-primary" th:text="${v.staff.jobType}">保洁</span>
+                    <span class="badge badge-info" th:text="${v.staff.staffLevel}">金牌</span>
+                    <span th:text="${'★ ' + v.staff.rating}">★ 4.9</span>
+                    <span th:text="${'接单 ' + v.staff.orderCount}">接单 0</span>
+                </div>
+
+                <p class="text-sm text-muted mt-2" style="min-height:2.8em;"
+                   th:text="${v.staff.intro}">简介</p>
+
+                <div class="flex-gap mt-2">
+                    <form th:action="@{/admin/staffs/{id}/available(id=${v.staff.id})}" method="post"
+                          style="margin:0;">
+                        <input type="hidden" name="available" th:value="${v.staff.available == 1 ? 0 : 1}">
+                        <button class="btn btn-outline btn-sm" type="submit"
+                                th:text="${v.staff.available == 1 ? '设为休息' : '设为接单'}">设为休息</button>
+                    </form>
+                </div>
+
+                <details class="mt-2">
+                    <summary style="cursor:pointer;font-size:.84rem;color:var(--brand-dark);font-weight:600;">
+                        编辑工种与等级
+                    </summary>
+                    <form th:action="@{/admin/staffs/{id}/update(id=${v.staff.id})}" method="post"
+                          class="form-grid mt-2">
+                        <div class="field-row">
+                            <div class="field">
+                                <label class="form-label">工种</label>
+                                <select class="form-control" name="jobType">
+                                    <option th:each="j : ${jobTypes}"
+                                            th:value="${j}" th:text="${j}"
+                                            th:selected="${j == v.staff.jobType}">保洁</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label class="form-label">等级</label>
+                                <select class="form-control" name="staffLevel">
+                                    <option th:each="l : ${levels}" th:value="${l}" th:text="${l}"
+                                            th:selected="${l == v.staff.staffLevel}">初级</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="form-label">简介</label>
+                            <textarea class="form-control" name="intro" rows="2"
+                                      th:text="${v.staff.intro}"></textarea>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary btn-sm" type="submit">保存</button>
+                        </div>
+                    </form>
+                </details>
+            </div>
+        </div>
+
+        <div class="empty card" th:if="${staffViews.isEmpty()}">
+            <div class="empty-icon">🧑‍🔧</div>
+            <h3>还没有服务人员</h3>
+            <p>新增服务人员后，即可在订单中派单</p>
+            <a class="btn btn-primary" th:href="@{/admin/staffs/new}">新增服务人员</a>
+        </div>
+    </main>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

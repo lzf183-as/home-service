@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' · 邻家帮管理后台'">邻家帮管理后台</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+
+<aside th:fragment="sidebar(active)" class="admin-side">
+    <div class="admin-brand">
+        <span class="logo-mark">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 10.5 12 3l9 7.5"/>
+                <path d="M5 9.5V21h14V9.5"/>
+            </svg>
+        </span>
+        邻家帮 · 管理后台
+    </div>
+
+    <div class="admin-nav-label">概览</div>
+    <nav class="admin-nav">
+        <a th:classappend="${active == 'dashboard' ? 'active' : ''}" th:href="@{/admin/dashboard}">
+            <span>📊</span> 数据看板
+        </a>
+    </nav>
+
+    <div class="admin-nav-label">运营管理</div>
+    <nav class="admin-nav">
+        <a th:classappend="${active == 'orders' ? 'active' : ''}" th:href="@{/admin/orders}">
+            <span>🧾</span> 订单管理
+        </a>
+        <a th:classappend="${active == 'services' ? 'active' : ''}" th:href="@{/admin/services}">
+            <span>🧽</span> 服务项目
+        </a>
+        <a th:classappend="${active == 'categories' ? 'active' : ''}" th:href="@{/admin/categories}">
+            <span>🗂️</span> 服务分类
+        </a>
+    </nav>
+
+    <div class="admin-nav-label">用户与人员</div>
+    <nav class="admin-nav">
+        <a th:classappend="${active == 'users' ? 'active' : ''}" th:href="@{/admin/users}">
+            <span>👥</span> 居民用户
+        </a>
+        <a th:classappend="${active == 'staffs' ? 'active' : ''}" th:href="@{/admin/staffs}">
+            <span>🧑‍🔧</span> 服务人员
+        </a>
+    </nav>
+
+    <div class="admin-side-foot">
+        <a th:href="@{/}" target="_blank">↗ 查看前台网站</a>
+        <a th:href="@{/staff/workbench}" th:if="${currentUser != null and currentUser.role == 'STAFF'}">↗ 接单工作台</a>
+        <form th:action="@{/logout}" method="post" style="margin:8px 0 0;">
+            <button class="btn btn-ghost btn-sm btn-block" type="submit"
+                    style="color:#c6ded5;justify-content:flex-start;padding:7px 12px;">退出登录</button>
+        </form>
+    </div>
+</aside>
+</body>
+</html>

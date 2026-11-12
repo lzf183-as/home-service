@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/admin :: head('居民用户')}"></head>
+<body>
+<div class="admin-shell">
+    <aside th:replace="~{fragments/admin :: sidebar('users')}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-head">
+            <div>
+                <h1>居民用户</h1>
+                <div class="sub" th:text="${'共 ' + users.total + ' 位注册居民'}">共 2 位注册居民</div>
+            </div>
+        </div>
+
+        <div th:replace="~{fragments/layout :: flash}"></div>
+
+        <div class="panel mb-2">
+            <form method="get" th:action="@{/admin/users}" class="filter-bar" style="margin-bottom:0;">
+                <input class="form-control grow" type="search" name="keyword" th:value="${keyword}"
+                       placeholder="搜索用户名 / 姓名 / 手机号">
+                <button class="btn btn-primary" type="submit">搜索</button>
+                <a class="btn btn-ghost" th:href="@{/admin/users}">重置</a>
+            </form>
+        </div>
+
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>用户名</th>
+                    <th>姓名</th>
+                    <th>手机号</th>
+                    <th>角色</th>
+                    <th>注册时间</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="u : ${users.records}">
+                    <td class="num text-sm" th:text="${u.id}">1</td>
+                    <td th:text="${u.username}">user</td>
+                    <td th:text="${u.realName}">张伟</td>
+                    <td th:text="${u.phone}">138</td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${u.role == 'ADMIN' ? 'badge-purple' : (u.role == 'STAFF' ? 'badge-info' : 'badge-primary')}"
+                              th:text="${u.role == 'ADMIN' ? '管理员' : (u.role == 'STAFF' ? '服务人员' : '居民')}">居民</span>
+                    </td>
+                    <td class="text-sm" th:text="${#temporals.format(u.createdAt, 'yyyy-MM-dd')}">2026-10-01</td>
+                    <td>
+                        <span class="badge" th:classappend="${u.status == 1 ? 'badge-success' : 'badge-danger'}"
+                              th:text="${u.status == 1 ? '正常' : '已禁用'}">正常</span>
+                    </td>
+                    <td>
+                        <form th:action="@{/admin/users/{id}/toggle(id=${u.id})}" method="post" style="margin:0;"
+                              th:if="${u.role != 'ADMIN'}"
+                              th:attr="data-confirm=${u.status == 1 ? '确定禁用该账号？禁用后将无法登录。' : null}">
+                            <input type="hidden" name="status" th:value="${u.status == 1 ? 0 : 1}">
+                            <button class="btn btn-sm" type="submit"
+                                    th:classappend="${u.status == 1 ? 'btn-danger' : 'btn-outline'}"
+                                    th:text="${u.status == 1 ? '禁用' : '启用'}">禁用</button>
+                        </form>
+                        <span class="text-sm text-muted" th:if="${u.role == 'ADMIN'}">—</span>
+                    </td>
+                </tr>
+                <tr th:if="${users.records.size() == 0}">
+                    <td colspan="8" class="text-center text-muted" style="padding:40px;">没有符合条件的用户</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" th:if="${users.pages > 1}">
+            <a class="page-btn" th:classappend="${users.current <= 1 ? 'disabled' : ''}"
+               th:href="@{/admin/users(page=${users.current - 1}, keyword=${keyword})}">上一页</a>
+            <a class="page-btn" th:each="i : ${#numbers.sequence(1, users.pages)}"
+               th:classappend="${i == users.current ? 'active' : ''}"
+               th:href="@{/admin/users(page=${i}, keyword=${keyword})}" th:text="${i}">1</a>
+            <a class="page-btn" th:classappend="${users.current >= users.pages ? 'disabled' : ''}"
+               th:href="@{/admin/users(page=${users.current + 1}, keyword=${keyword})}">下一页</a>
+        </div>
+    </main>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

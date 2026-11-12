@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('登录')}"></head>
+<body>
+<div class="auth-wrap">
+    <aside class="auth-side">
+        <a class="logo" th:href="@{/}" style="color:#fff; margin-bottom:32px;">
+            <span class="logo-mark" style="background:rgba(255,255,255,.2);box-shadow:none;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 10.5 12 3l9 7.5"/>
+                    <path d="M5 9.5V21h14V9.5"/>
+                </svg>
+            </span>
+            邻家帮
+        </a>
+        <h2>社区里的家政服务，<br>约得明白，做得放心。</h2>
+        <p>实名认证的服务人员、透明的价格与进度，让每一次上门都心里有数。</p>
+        <ul class="auth-points">
+            <li><span class="dot">✓</span><span>600+ 持证服务人员，覆盖保洁、母婴、维修、陪护</span></li>
+            <li><span class="dot">✓</span><span>线上下单锁定价格，服务完成确认后再结算</span></li>
+            <li><span class="dot">✓</span><span>订单全程留痕，服务评价真实可查</span></li>
+        </ul>
+    </aside>
+
+    <main class="auth-main">
+        <div class="auth-card">
+            <h1>欢迎回来</h1>
+            <p class="auth-sub">登录后即可预约服务、查看订单进度</p>
+
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="alert alert-error" th:if="${param.error}">
+                <span>!</span>
+                <span>用户名或密码错误，请重新输入</span>
+            </div>
+            <div class="alert alert-success" th:if="${param.registered}">
+                <span>✓</span>
+                <span>注册成功，请登录</span>
+            </div>
+
+            <form th:action="@{/login}" method="post" class="form-grid">
+                <div class="field">
+                    <label class="form-label" for="username">用户名</label>
+                    <input class="form-control" type="text" id="username" name="username"
+                           placeholder="请输入用户名" autocomplete="username" required autofocus>
+                </div>
+                <div class="field">
+                    <label class="form-label" for="password">密码</label>
+                    <input class="form-control" type="password" id="password" name="password"
+                           placeholder="请输入密码" autocomplete="current-password" required>
+                </div>
+                <button class="btn btn-primary btn-block btn-lg" type="submit">登录</button>
+            </form>
+
+            <div class="auth-foot">
+                还没有账号？<a th:href="@{/register}">免费注册</a>
+                <span style="margin:0 8px;opacity:.4;">|</span>
+                <a th:href="@{/}">返回首页</a>
+            </div>
+
+            <div class="demo-accounts">
+                <div style="margin-bottom:6px;"><b>演示账号</b>（密码均为 <code>123456789</code>）</div>
+                <div>居民：<code>user</code> · 服务人员：<code>staff</code> · 管理员：<code>admin</code></div>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

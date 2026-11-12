@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('页面不存在')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container" style="padding:70px 20px 100px;">
+    <div class="card" style="max-width:560px;margin:0 auto;padding:44px 34px;text-align:center;">
+        <div class="empty-icon">🧭</div>
+        <h1 style="font-size:1.4rem;">页面走丢了</h1>
+        <p class="text-muted">你访问的地址不存在，可能是链接已失效或输入有误。</p>
+        <div class="flex-gap mt-3" style="justify-content:center;">
+            <a class="btn btn-outline" th:href="@{/services}">看看服务</a>
+            <a class="btn btn-primary" th:href="@{/}">回到首页</a>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

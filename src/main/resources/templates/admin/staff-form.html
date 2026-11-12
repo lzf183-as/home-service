@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/admin :: head('新增服务人员')}"></head>
+<body>
+<div class="admin-shell">
+    <aside th:replace="~{fragments/admin :: sidebar('staffs')}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-head">
+            <div>
+                <h1>新增服务人员</h1>
+                <div class="sub">创建登录账号并建立服务人员档案，创建后即可在订单中派单</div>
+            </div>
+            <a class="btn btn-ghost btn-sm" th:href="@{/admin/staffs}">← 返回列表</a>
+        </div>
+
+        <div th:replace="~{fragments/layout :: flash}"></div>
+
+        <div class="panel" style="max-width:680px;">
+            <form th:action="@{/admin/staffs}" th:object="${form}" method="post" class="form-grid">
+                <div class="field-row">
+                    <div class="field">
+                        <label class="form-label" for="username">登录账号 <span class="req">*</span></label>
+                        <input class="form-control" type="text" id="username" th:field="*{username}"
+                               placeholder="3-20 位字母、数字或下划线">
+                        <div class="form-error" th:if="${#fields.hasErrors('username')}"
+                             th:errors="*{username}"></div>
+                    </div>
+                    <div class="field">
+                        <label class="form-label" for="password">初始密码</label>
+                        <input class="form-control" type="text" id="password" th:field="*{password}"
+                               placeholder="留空则默认为 123456789">
+                        <div class="form-error" th:if="${#fields.hasErrors('password')}"
+                             th:errors="*{password}"></div>
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label class="form-label" for="realName">姓名 <span class="req">*</span></label>
+                        <input class="form-control" type="text" id="realName" th:field="*{realName}">
+                        <div class="form-error" th:if="${#fields.hasErrors('realName')}"
+                             th:errors="*{realName}"></div>
+                    </div>
+                    <div class="field">
+                        <label class="form-label" for="phone">手机号 <span class="req">*</span></label>
+                        <input class="form-control" type="tel" id="phone" th:field="*{phone}">
+                        <div class="form-error" th:if="${#fields.hasErrors('phone')}"
+                             th:errors="*{phone}"></div>
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label class="form-label" for="jobType">工种 <span class="req">*</span></label>
+                        <select class="form-control" id="jobType" th:field="*{jobType}">
+                            <option value="">请选择工种</option>
+                            <option th:each="j : ${jobTypes}" th:value="${j}" th:text="${j}">保洁</option>
+                        </select>
+                        <div class="form-error" th:if="${#fields.hasErrors('jobType')}"
+                             th:errors="*{jobType}"></div>
+                    </div>
+                    <div class="field">
+                        <label class="form-label" for="staffLevel">等级</label>
+                        <select class="form-control" id="staffLevel" th:field="*{staffLevel}">
+                            <option th:each="l : ${levels}" th:value="${l}" th:text="${l}">初级</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="form-label" for="intro">个人简介</label>
+                    <textarea class="form-control" id="intro" th:field="*{intro}" rows="4"
+                              placeholder="例如：8 年家政经验，擅长深度保洁与新房开荒"></textarea>
+                    <div class="form-error" th:if="${#fields.hasErrors('intro')}" th:errors="*{intro}"></div>
+                </div>
+
+                <div class="flex-gap">
+                    <button class="btn btn-primary" type="submit">创建账号</button>
+                    <a class="btn btn-ghost" th:href="@{/admin/staffs}">取消</a>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

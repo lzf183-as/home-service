@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('注册')}"></head>
+<body>
+<div class="auth-wrap">
+    <aside class="auth-side">
+        <a class="logo" th:href="@{/}" style="color:#fff; margin-bottom:32px;">
+            <span class="logo-mark" style="background:rgba(255,255,255,.2);box-shadow:none;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 10.5 12 3l9 7.5"/>
+                    <path d="M5 9.5V21h14V9.5"/>
+                </svg>
+            </span>
+            邻家帮
+        </a>
+        <h2>注册只需一分钟，<br>从此家务有人搭把手。</h2>
+        <p>注册后可保存常用地址、跟踪订单进度、评价服务人员。</p>
+        <ul class="auth-points">
+            <li><span class="dot">✓</span><span>常用地址一次保存，下单自动带入</span></li>
+            <li><span class="dot">✓</span><span>订单状态实时更新，接单即通知</span></li>
+            <li><span class="dot">✓</span><span>服务完成后评价，帮助邻居避坑</span></li>
+        </ul>
+    </aside>
+
+    <main class="auth-main">
+        <div class="auth-card">
+            <h1>创建账号</h1>
+            <p class="auth-sub">填写基本信息，即可开始预约社区家政服务</p>
+
+            <div class="alert alert-error" th:if="${error}">
+                <span>!</span><span th:text="${error}">注册失败</span>
+            </div>
+
+            <form th:action="@{/register}" th:object="${form}" method="post" class="form-grid">
+                <div class="field">
+                    <label class="form-label" for="username">用户名 <span class="req">*</span></label>
+                    <input class="form-control" type="text" id="username" th:field="*{username}"
+                           placeholder="3-20 位字母、数字或下划线" autocomplete="username">
+                    <div class="form-error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+                </div>
+
+                <div class="field">
+                    <label class="form-label" for="realName">姓名 <span class="req">*</span></label>
+                    <input class="form-control" type="text" id="realName" th:field="*{realName}"
+                           placeholder="用于服务人员上门称呼">
+                    <div class="form-error" th:if="${#fields.hasErrors('realName')}" th:errors="*{realName}"></div>
+                </div>
+
+                <div class="field">
+                    <label class="form-label" for="phone">手机号 <span class="req">*</span></label>
+                    <input class="form-control" type="tel" id="phone" th:field="*{phone}"
+                           placeholder="用于接单通知与上门联系">
+                    <div class="form-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+                </div>
+
+                <div class="field">
+                    <label class="form-label" for="password">密码 <span class="req">*</span></label>
+                    <input class="form-control" type="password" id="password" th:field="*{password}"
+                           placeholder="至少 6 位" autocomplete="new-password">
+                    <div class="form-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+                </div>
+
+                <div class="field">
+                    <label class="form-label" for="confirmPassword">确认密码 <span class="req">*</span></label>
+                    <input class="form-control" type="password" id="confirmPassword" th:field="*{confirmPassword}"
+                           placeholder="请再次输入密码" autocomplete="new-password">
+                    <div class="form-error" th:if="${#fields.hasErrors('confirmPassword')}"
+                         th:errors="*{confirmPassword}"></div>
+                </div>
+
+                <button class="btn btn-primary btn-block btn-lg" type="submit">注册并登录</button>
+            </form>
+
+            <div class="auth-foot">
+                已有账号？<a th:href="@{/login}">直接登录</a>
+                <span style="margin:0 8px;opacity:.4;">|</span>
+                <a th:href="@{/}">返回首页</a>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

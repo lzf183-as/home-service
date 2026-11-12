@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('首页')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<section class="hero">
+    <div class="container hero-inner">
+        <div>
+            <div class="hero-eyebrow">🏅 社区实名认证 · 持证上岗 · 明码标价</div>
+            <h1>楼下就能约到的<br><em>放心家政</em></h1>
+            <p class="hero-lead">
+                保洁、家电清洗、母婴护理、水电维修、老人陪护，一站式社区家政服务。
+                线上下单、按约上门，服务完成后确认再评价。
+            </p>
+            <div class="hero-actions">
+                <a class="btn btn-primary btn-lg" th:href="@{/services}">立即预约服务</a>
+                <a class="btn btn-outline btn-lg" th:href="@{/orders}"
+                   th:if="${currentUser != null}">查看我的订单</a>
+                <a class="btn btn-outline btn-lg" th:href="@{/register}"
+                   th:if="${currentUser == null}">注册新账号</a>
+            </div>
+            <div class="hero-facts">
+                <div>
+                    <div class="fact-num">1,286<small>+</small></div>
+                    <div class="fact-label">累计服务家庭</div>
+                </div>
+                <div>
+                    <div class="fact-num">4.9<small>/5</small></div>
+                    <div class="fact-label">平均服务评分</div>
+                </div>
+                <div>
+                    <div class="fact-num">2<small>小时</small></div>
+                    <div class="fact-label">最快上门时间</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-card">
+            <div class="flex-between">
+                <div class="hero-card-title">今日可约</div>
+                <span class="badge badge-success">实时</span>
+            </div>
+            <div class="hero-slots">
+                <a class="hero-slot" th:each="s : ${hotServices}" th:if="${sStat.index < 3}"
+                   th:href="@{/services/{id}(id=${s.id})}">
+                    <span class="hero-slot-icon" th:text="${s.cover}">🧽</span>
+                    <span>
+                        <span class="hero-slot-name" th:text="${s.name}">日常保洁 3 小时</span>
+                        <span class="hero-slot-meta" th:text="${s.duration + ' 分钟 · 已服务 ' + s.sales + ' 次'}">180 分钟</span>
+                    </span>
+                    <span class="hero-slot-price">
+                        ¥<span th:text="${s.priceText}">129</span>
+                        <small th:text="${'/' + s.priceUnit}">/次</small>
+                    </span>
+                </a>
+            </div>
+            <div class="text-sm text-muted mt-2" style="line-height:1.6;">
+                平台承诺：服务人员实名认证，服务过程可追溯，<br>不满意可申请重做。
+            </div>
+        </div>
+    </div>
+</section>
+
+<main>
+    <section class="section">
+        <div class="container">
+            <div class="section-head">
+                <div>
+                    <h2>按需选择服务</h2>
+                    <p class="section-sub">六大类社区高频家政需求，价格透明，按次/按小时灵活预约</p>
+                </div>
+                <a class="btn btn-ghost btn-sm" th:href="@{/services}">查看全部 →</a>
+            </div>
+            <div class="category-grid">
+                <a class="category-card" th:each="c : ${categories}"
+                   th:href="@{/services(categoryId=${c.id})}">
+                    <span class="category-icon" th:text="${c.icon}">🧹</span>
+                    <span class="category-name" th:text="${c.name}">日常保洁</span>
+                    <span class="category-count" th:text="${c.description}">全屋清扫</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" style="background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);">
+        <div class="container">
+            <div class="section-head">
+                <div>
+                    <h2>本周热门服务</h2>
+                    <p class="section-sub">社区居民预约最多的服务项目，支持当天预约</p>
+                </div>
+                <a class="btn btn-ghost btn-sm" th:href="@{/services}">全部服务 →</a>
+            </div>
+
+            <div class="service-grid">
+                <a class="service-card" th:each="s, st : ${hotServices}" th:href="@{/services/{id}(id=${s.id})}">
+                    <div class="service-cover" th:classappend="${'cat-' + (st.index % 6 + 1)}">
+                        <span th:text="${s.cover}">🧽</span>
+                        <span class="service-cover-tag">热门</span>
+                    </div>
+                    <div class="service-body">
+                        <div class="service-name" th:text="${s.name}">日常保洁 3 小时</div>
+                        <div class="service-sub" th:text="${s.subtitle}">自带专业工具</div>
+                        <div class="meta-row mb-2">
+                            <span class="stars">★★★★★</span>
+                            <span th:text="${s.rating}">4.9</span>
+                            <span th:text="${'已售 ' + s.sales}">已售 1286</span>
+                        </div>
+                        <div class="service-foot">
+                            <div class="price">
+                                <span class="price-prefix">¥</span><span th:text="${s.priceText}">129</span>
+                                <small th:text="${'/' + s.priceUnit}">/次</small>
+                            </div>
+                            <span class="btn btn-outline btn-sm">查看详情</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="section-head">
+                <div>
+                    <h2>四步完成一次预约</h2>
+                    <p class="section-sub">不用打电话反复沟通，全流程线上留痕</p>
+                </div>
+            </div>
+            <div class="grid grid-4">
+                <div class="card card-pad">
+                    <div class="badge badge-primary mb-2">STEP 1</div>
+                    <h3>选择服务</h3>
+                    <p class="text-sm text-muted mb-0">按分类浏览，查看服务内容、时长与价格。</p>
+                </div>
+                <div class="card card-pad">
+                    <div class="badge badge-primary mb-2">STEP 2</div>
+                    <h3>预约时间</h3>
+                    <p class="text-sm text-muted mb-0">选择上门日期与时段，填写地址和特殊要求。</p>
+                </div>
+                <div class="card card-pad">
+                    <div class="badge badge-primary mb-2">STEP 3</div>
+                    <h3>上门服务</h3>
+                    <p class="text-sm text-muted mb-0">服务人员接单后按约上门，平台记录服务进度。</p>
+                </div>
+                <div class="card card-pad">
+                    <div class="badge badge-primary mb-2">STEP 4</div>
+                    <h3>确认评价</h3>
+                    <p class="text-sm text-muted mb-0">服务完成确认后再评价，评价影响服务人员评分。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="card card-pad" style="padding:34px;">
+                <div class="grid grid-3" style="gap:26px;">
+                    <div>
+                        <h3>🛡️ 实名认证</h3>
+                        <p class="text-sm text-muted mb-0">服务人员身份证、健康证与技能证书三重核验，平台留档可查。</p>
+                    </div>
+                    <div>
+                        <h3>💰 明码标价</h3>
+                        <p class="text-sm text-muted mb-0">下单即锁定价格，无上门加价；材料费单独列明，先确认后使用。</p>
+                    </div>
+                    <div>
+                        <h3>🔁 不满意重做</h3>
+                        <p class="text-sm text-muted mb-0">服务完成 24 小时内可反馈问题，平台协调免费返工或退款。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

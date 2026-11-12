@@ -1,0 +1,40 @@
+server:
+  port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+
+spring:
+  application:
+    name: home-service
+  profiles:
+    active: h2
+  thymeleaf:
+    cache: false
+    encoding: UTF-8
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema.sql
+      continue-on-error: false
+  messages:
+    encoding: UTF-8
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+
+# 登录失败/注册提示等日志
+logging:
+  level:
+    root: info
+    com.community.homeservice: info

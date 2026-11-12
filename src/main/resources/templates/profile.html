@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('个人中心')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container">
+    <div class="page-head">
+        <div class="crumbs">
+            <a th:href="@{/}">首页</a><span>/</span><span>个人中心</span>
+        </div>
+        <h1>个人中心</h1>
+        <p class="section-sub">管理你的联系方式与常用地址，下单时自动带入</p>
+    </div>
+
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <div class="profile-grid">
+        <aside>
+            <div class="card profile-card">
+                <div class="profile-avatar" th:text="${#strings.substring(user.realName, 0, 1)}">张</div>
+                <div class="profile-name" th:text="${user.realName}">张伟</div>
+                <div class="profile-role" th:text="${'@' + user.username + ' · ' + (user.role == 'ADMIN' ? '管理员' : (user.role == 'STAFF' ? '服务人员' : '社区居民'))}">
+                    @user · 社区居民
+                </div>
+                <div class="profile-stats">
+                    <div>
+                        <div class="v" th:text="${orderCount}">5</div>
+                        <div class="k">累计订单</div>
+                    </div>
+                    <div>
+                        <div class="v" th:text="${completedCount}">2</div>
+                        <div class="k">已完成</div>
+                    </div>
+                </div>
+                <a class="btn btn-outline btn-block mt-2" th:href="@{/orders}">查看我的订单</a>
+            </div>
+        </aside>
+
+        <div>
+            <div class="card card-pad mb-3">
+                <h3 class="mb-2">基本资料</h3>
+                <form th:action="@{/profile}" th:object="${profileForm}" method="post" class="form-grid">
+                    <div class="field-row">
+                        <div class="field">
+                            <label class="form-label" for="realName">姓名</label>
+                            <input class="form-control" type="text" id="realName" th:field="*{realName}">
+                            <div class="form-error" th:if="${#fields.hasErrors('realName')}"
+                                 th:errors="*{realName}"></div>
+                        </div>
+                        <div class="field">
+                            <label class="form-label" for="phone">手机号</label>
+                            <input class="form-control" type="tel" id="phone" th:field="*{phone}">
+                            <div class="form-error" th:if="${#fields.hasErrors('phone')}"
+                                 th:errors="*{phone}"></div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="form-label" for="email">邮箱（选填）</label>
+                        <input class="form-control" type="email" id="email" th:field="*{email}"
+                               placeholder="用于接收订单提醒">
+                        <div class="form-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" type="submit">保存资料</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card card-pad mb-3">
+                <div class="flex-between mb-2">
+                    <h3 class="mb-0">常用地址</h3>
+                    <span class="text-sm text-muted" th:text="${addresses.size() + ' 个地址'}">2 个地址</span>
+                </div>
+
+                <div th:each="a : ${addresses}" class="address-card"
+                     th:classappend="${a.isDefault != null and a.isDefault == 1 ? 'is-default' : ''}">
+                    <div class="address-main">
+                        <div class="address-line1">
+                            <span th:text="${a.contactName}">张伟</span>
+                            <span class="text-sm text-muted" th:text="${a.contactPhone}">13800001111</span>
+                            <span class="badge badge-primary" th:if="${a.isDefault != null and a.isDefault == 1}">默认</span>
+                        </div>
+                        <div class="address-line2" th:text="${a.region + ' ' + a.detail}">阳光花园 3 号楼 2 单元 501</div>
+                    </div>
+                    <div class="flex-gap">
+                        <a class="btn btn-ghost btn-sm" th:href="@{/profile(editAddressId=${a.id})}">编辑</a>
+                        <form th:if="${a.isDefault == null or a.isDefault == 0}"
+                              th:action="@{/addresses/{id}/default(id=${a.id})}" method="post" style="margin:0;">
+                            <button class="btn btn-ghost btn-sm" type="submit">设为默认</button>
+                        </form>
+                        <form th:action="@{/addresses/{id}/delete(id=${a.id})}" method="post" style="margin:0;"
+                              data-confirm="确定删除这个地址吗？">
+                            <button class="btn btn-ghost btn-sm" type="submit" style="color:var(--danger);">删除</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="text-sm text-muted" th:if="${addresses.isEmpty()}" style="padding:10px 0;">
+                    还没有保存地址，添加后下单可直接选择。
+                </div>
+
+                <details class="mt-2" th:attr="open=${editAddressId != null ? 'open' : null}">
+                    <summary style="cursor:pointer;font-size:.9rem;font-weight:650;color:var(--brand-dark);padding:8px 0;">
+                        <span th:if="${addressForm.id == null}">+ 新增地址</span>
+                        <span th:if="${addressForm.id != null}">编辑地址</span>
+                    </summary>
+                    <form th:action="@{/addresses}" th:object="${addressForm}" method="post" class="form-grid mt-2">
+                        <input type="hidden" th:field="*{id}">
+                        <div class="field-row">
+                            <div class="field">
+                                <label class="form-label" for="addrName">联系人</label>
+                                <input class="form-control" type="text" id="addrName" th:field="*{contactName}">
+                                <div class="form-error" th:if="${#fields.hasErrors('contactName')}"
+                                     th:errors="*{contactName}"></div>
+                            </div>
+                            <div class="field">
+                                <label class="form-label" for="addrPhone">联系电话</label>
+                                <input class="form-control" type="tel" id="addrPhone" th:field="*{contactPhone}">
+                                <div class="form-error" th:if="${#fields.hasErrors('contactPhone')}"
+                                     th:errors="*{contactPhone}"></div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="form-label" for="addrRegion">小区 / 街道</label>
+                            <input class="form-control" type="text" id="addrRegion" th:field="*{region}"
+                                   placeholder="例如：阳光花园小区 3 号楼">
+                            <div class="form-error" th:if="${#fields.hasErrors('region')}" th:errors="*{region}"></div>
+                        </div>
+                        <div class="field">
+                            <label class="form-label" for="addrDetail">门牌号等详细地址</label>
+                            <input class="form-control" type="text" id="addrDetail" th:field="*{detail}"
+                                   placeholder="例如：2 单元 501">
+                            <div class="form-error" th:if="${#fields.hasErrors('detail')}" th:errors="*{detail}"></div>
+                        </div>
+                        <label class="checkbox">
+                            <input type="checkbox" th:field="*{setDefault}">
+                            <span>设为默认地址</span>
+                        </label>
+                        <div class="flex-gap">
+                            <button class="btn btn-primary" type="submit">保存地址</button>
+                            <a class="btn btn-ghost" th:href="@{/profile}" th:if="${addressForm.id != null}">取消编辑</a>
+                        </div>
+                    </form>
+                </details>
+            </div>
+
+            <div class="card card-pad">
+                <h3 class="mb-2">修改密码</h3>
+                <form th:action="@{/profile/password}" method="post" class="form-grid">
+                    <div class="field-row">
+                        <div class="field">
+                            <label class="form-label" for="oldPassword">原密码</label>
+                            <input class="form-control" type="password" id="oldPassword" name="oldPassword"
+                                   autocomplete="current-password" required>
+                        </div>
+                        <div class="field">
+                            <label class="form-label" for="newPassword">新密码</label>
+                            <input class="form-control" type="password" id="newPassword" name="newPassword"
+                                   autocomplete="new-password" minlength="6" required>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="btn btn-outline" type="submit">更新密码</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

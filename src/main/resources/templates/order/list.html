@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('我的订单')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container">
+    <div class="page-head">
+        <div class="crumbs">
+            <a th:href="@{/}">首页</a><span>/</span><span>我的订单</span>
+        </div>
+        <div class="flex-between">
+            <div>
+                <h1>我的订单</h1>
+                <p class="section-sub">共 <span th:text="${page.total}">5</span> 笔预约记录</p>
+            </div>
+            <a class="btn btn-primary" th:href="@{/services}">再约一单</a>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <div class="tabs">
+        <a class="tab" th:classappend="${status == null or status.isEmpty() ? 'active' : ''}"
+           th:href="@{/orders}">全部</a>
+        <a class="tab" th:each="entry : ${statusLabels}"
+           th:classappend="${status == entry.key ? 'active' : ''}"
+           th:href="@{/orders(status=${entry.key})}"
+           th:text="${entry.value}">待接单</a>
+    </div>
+
+    <div th:each="o : ${page.records}" class="order-card">
+        <div class="order-head">
+            <span class="order-no" th:text="${'订单号 ' + o.orderNo}">订单号 HS20261112</span>
+            <span th:text="${#temporals.format(o.createdAt, 'yyyy-MM-dd HH:mm')}">2026-11-12 15:00</span>
+            <span class="spacer"></span>
+            <span class="badge"
+                  th:classappend="${'badge-' + statusTones[o.status]}"
+                  th:text="${statusLabels[o.status]}">待接单</span>
+        </div>
+        <div class="order-body">
+            <div class="order-thumb"
+                 th:text="${#strings.substring(o.serviceName, 0, 1)}">日</div>
+            <div class="order-info">
+                <div class="order-name" th:text="${o.serviceName}">日常保洁 3 小时</div>
+                <div class="order-meta">
+                    <span th:text="${'预约 ' + #temporals.format(o.appointmentDate, 'MM-dd') + ' ' + o.appointmentTime}">预约 11-13 09:00</span>
+                    <span th:text="${o.contactName + ' · ' + o.contactPhone}">张伟 · 13800001111</span>
+                    <span th:if="${o.staffId != null and staffNameMap[o.staffId] != null}"
+                          th:text="${'服务人员：' + staffNameMap[o.staffId]}">服务人员：王秀兰</span>
+                </div>
+                <div class="order-meta" style="margin-top:4px;">
+                    <span th:text="${o.address}">阳光花园小区 3 号楼 2 单元 501</span>
+                </div>
+            </div>
+            <div class="order-side">
+                <div class="order-amount" th:text="${'¥' + #numbers.formatDecimal(o.amount, 1, 2)}">¥129.00</div>
+                <div class="order-actions">
+                    <a class="btn btn-outline btn-sm" th:href="@{/orders/{id}(id=${o.id})}">订单详情</a>
+                    <form th:action="@{/orders/{id}/cancel(id=${o.id})}" method="post" style="margin:0;"
+                          th:if="${o.status == 'PENDING_ACCEPT' or o.status == 'ACCEPTED'}"
+                          data-confirm="确定取消这笔订单吗？">
+                        <input type="hidden" name="reason" value="用户从订单列表取消">
+                        <button class="btn btn-danger btn-sm" type="submit">取消</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="empty card" th:if="${page.records.size() == 0}">
+        <div class="empty-icon">🗓️</div>
+        <h3>还没有相关订单</h3>
+        <p>选一项服务，最快 2 小时后即可上门</p>
+        <a class="btn btn-primary" th:href="@{/services}">去逛逛服务</a>
+    </div>
+
+    <div class="pagination" th:if="${page.pages > 1}">
+        <a class="page-btn" th:classappend="${page.current <= 1 ? 'disabled' : ''}"
+           th:href="@{/orders(page=${page.current - 1}, status=${status})}">上一页</a>
+        <a class="page-btn" th:each="i : ${#numbers.sequence(1, page.pages)}"
+           th:classappend="${i == page.current ? 'active' : ''}"
+           th:href="@{/orders(page=${i}, status=${status})}" th:text="${i}">1</a>
+        <a class="page-btn" th:classappend="${page.current >= page.pages ? 'disabled' : ''}"
+           th:href="@{/orders(page=${page.current + 1}, status=${status})}">下一页</a>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

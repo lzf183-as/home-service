@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/admin :: head('数据看板')}"></head>
+<body>
+<div class="admin-shell">
+    <aside th:replace="~{fragments/admin :: sidebar('dashboard')}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-head">
+            <div>
+                <h1>数据看板</h1>
+                <div class="sub">平台运营概览 · 数据实时统计自订单与用户表</div>
+            </div>
+            <a class="btn btn-outline btn-sm" th:href="@{/admin/orders(status='PENDING_ACCEPT')}">
+                待接单 <span th:text="${overview.pendingOrders}">3</span> 单 →
+            </a>
+        </div>
+
+        <div th:replace="~{fragments/layout :: flash}"></div>
+
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="k">📦 累计订单</div>
+                <div class="v" th:text="${overview.totalOrders}">5</div>
+                <div class="delta" th:text="${'今日新增 ' + overview.todayOrders + ' 单'}">今日新增 3 单</div>
+            </div>
+            <div class="stat-card">
+                <div class="k">💰 已完成营收</div>
+                <div class="v">
+                    <span style="font-size:1.1rem;">¥</span><span
+                        th:text="${#numbers.formatDecimal(overview.revenue, 1, 2)}">129.00</span>
+                </div>
+                <div class="delta" th:text="${'已完成 ' + overview.completedOrders + ' 单'}">已完成 1 单</div>
+            </div>
+            <div class="stat-card">
+                <div class="k">👥 注册居民</div>
+                <div class="v" th:text="${overview.userCount}">2</div>
+                <div class="delta">含全部社区居民账号</div>
+            </div>
+            <div class="stat-card">
+                <div class="k">🧑‍🔧 服务人员</div>
+                <div class="v" th:text="${overview.staffCount}">4</div>
+                <div class="delta">保洁 / 维修 / 母婴 / 陪护</div>
+            </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns:1.5fr 1fr;gap:16px;align-items:stretch;">
+            <div class="panel">
+                <div class="panel-head">
+                    <h3>近 7 日订单趋势</h3>
+                    <span class="hint">按下单时间统计</span>
+                </div>
+                <div class="bar-chart">
+                    <div class="bar-col" th:each="p : ${trend}">
+                        <div class="bar-val" th:text="${p.count}">0</div>
+                        <div class="bar" th:style="${'height:' + (p.count * 100 / maxTrend) + '%;'}"></div>
+                        <div class="bar-label" th:text="${p.label}">11/06</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h3>热门服务 Top 5</h3>
+                    <span class="hint">按完成订单</span>
+                </div>
+                <div class="rank-list" th:if="${!topServices.isEmpty()}">
+                    <div class="rank-item" th:each="r, st : ${topServices}">
+                        <span class="rank-no" th:text="${st.index + 1}">1</span>
+                        <span class="rank-name" th:text="${r.name}">日常保洁</span>
+                        <span class="rank-count" th:text="${r.count + ' 单'}">1 单</span>
+                    </div>
+                </div>
+                <div class="text-sm text-muted" th:if="${topServices.isEmpty()}">
+                    暂无已完成订单，服务完成后会自动统计。
+                </div>
+            </div>
+        </div>
+
+        <div class="grid mt-2" style="grid-template-columns:1.5fr 1fr;gap:16px;align-items:stretch;">
+            <div class="panel">
+                <div class="panel-head">
+                    <h3>最近订单</h3>
+                    <a class="hint" th:href="@{/admin/orders}">全部订单 →</a>
+                </div>
+                <div>
+                    <div th:each="o : ${recentOrders}" class="flex-between"
+                         style="padding:11px 0;border-bottom:1px solid #f0f4f2;">
+                        <div style="min-width:0;padding-right:12px;">
+                            <div style="font-weight:650;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                                 th:text="${o.serviceName}">日常保洁 3 小时</div>
+                            <div class="text-sm text-muted"
+                                 th:text="${#temporals.format(o.appointmentDate, 'MM-dd') + ' ' + o.appointmentTime + ' · ' + o.contactName}">
+                                11-13 09:00 · 张伟
+                            </div>
+                        </div>
+                        <div style="text-align:right;flex-shrink:0;">
+                            <div class="num" th:text="${'¥' + #numbers.formatDecimal(o.amount, 1, 2)}">¥129.00</div>
+                            <span class="badge" th:classappend="${'badge-' + statusTones[o.status]}"
+                                  th:text="${statusLabels[o.status]}">待接单</span>
+                        </div>
+                    </div>
+                    <div class="text-sm text-muted text-center" th:if="${recentOrders.isEmpty()}"
+                         style="padding:26px;">暂无订单</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h3>订单状态分布</h3>
+                </div>
+                <div class="stack-list">
+                    <div th:each="e : ${statusDist}">
+                        <div class="flex-between text-sm" style="margin-bottom:4px;">
+                            <span th:text="${statusLabels[e.key]}">待接单</span>
+                            <span class="text-muted" th:text="${e.value + ' 单'}">0 单</span>
+                        </div>
+                        <div style="height:6px;background:#eef3f1;border-radius:4px;overflow:hidden;">
+                            <div th:style="${'height:100%;border-radius:4px;background:var(--brand);width:' + (overview.totalOrders > 0 ? (e.value * 100 / overview.totalOrders) : 0) + '%;'}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

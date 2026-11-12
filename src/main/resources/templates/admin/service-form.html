@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/admin :: head('服务编辑')}"></head>
+<body>
+<div class="admin-shell">
+    <aside th:replace="~{fragments/admin :: sidebar('services')}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-head">
+            <div>
+                <h1 th:text="${editing ? '编辑服务项目' : '新增服务项目'}">新增服务项目</h1>
+                <div class="sub">服务上架后前台立即可见，价格与时长会展示在服务卡片上</div>
+            </div>
+            <a class="btn btn-ghost btn-sm" th:href="@{/admin/services}">← 返回列表</a>
+        </div>
+
+        <div th:replace="~{fragments/layout :: flash}"></div>
+
+        <div class="panel" style="max-width:760px;">
+            <form th:action="@{/admin/services/save}" th:object="${form}" method="post" class="form-grid">
+                <input type="hidden" th:field="*{id}">
+
+                <div class="field-row">
+                    <div class="field">
+                        <label class="form-label" for="categoryId">所属分类 <span class="req">*</span></label>
+                        <select class="form-control" id="categoryId" th:field="*{categoryId}">
+                            <option value="">请选择分类</option>
+                            <option th:each="c : ${categories}" th:value="${c.id}"
+                                    th:text="${c.name}">日常保洁</option>
+                        </select>
+                        <div class="form-error" th:if="${#fields.hasErrors('categoryId')}"
+                             th:errors="*{categoryId}"></div>
+                    </div>
+                    <div class="field">
+                        <label class="form-label" for="status">上架状态</label>
+                        <select class="form-control" id="status" th:field="*{status}">
+                            <option value="1">上架</option>
+                            <option value="0">下架</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="form-label" for="name">服务名称 <span class="req">*</span></label>
+                    <input class="form-control" type="text" id="name" th:field="*{name}"
+                           placeholder="例如：日常保洁 3 小时">
+                    <div class="form-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                </div>
+
+                <div class="field">
+                    <label class="form-label" for="subtitle">副标题</label>
+                    <input class="form-control" type="text" id="subtitle" th:field="*{subtitle}"
+                           placeholder="一句话说明服务亮点">
+                    <div class="form-error" th:if="${#fields.hasErrors('subtitle')}" th:errors="*{subtitle}"></div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label class="form-label" for="price">价格（元） <span class="req">*</span></label>
+                        <input class="form-control" type="number" id="price" step="0.01" min="0.01"
+                               th:field="*{price}" placeholder="129.00">
+                        <div class="form-error" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
+                    </div>
+                    <div class="field">
+                        <label class="form-label" for="priceUnit">计价单位 <span class="req">*</span></label>
+                        <input class="form-control" type="text" id="priceUnit" th:field="*{priceUnit}"
+                               placeholder="次 / 小时 / 台 / 月" maxlength="10">
+                        <div class="form-error" th:if="${#fields.hasErrors('priceUnit')}"
+                             th:errors="*{priceUnit}"></div>
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label class="form-label" for="duration">服务时长（分钟） <span class="req">*</span></label>
+                        <input class="form-control" type="number" id="duration" min="30" step="30"
+                               th:field="*{duration}" placeholder="180">
+                        <div class="form-error" th:if="${#fields.hasErrors('duration')}"
+                             th:errors="*{duration}"></div>
+                    </div>
+                    <div class="field">
+                        <label class="form-label" for="cover">封面图标（emoji）</label>
+                        <input class="form-control" type="text" id="cover" th:field="*{cover}"
+                               placeholder="🧽" maxlength="4">
+                        <div class="form-hint">常用：🧽 🧴 ❄️ 🔧 👶 👵 📦 🏥</div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="form-label" for="description">服务内容说明</label>
+                    <textarea class="form-control" id="description" th:field="*{description}" rows="6"
+                              placeholder="分条说明服务包含内容、服务标准与不包含的项目"></textarea>
+                    <div class="form-error" th:if="${#fields.hasErrors('description')}"
+                         th:errors="*{description}"></div>
+                </div>
+
+                <div class="flex-gap">
+                    <button class="btn btn-primary" type="submit"
+                            th:text="${editing ? '保存修改' : '创建并上架'}">创建并上架</button>
+                    <a class="btn btn-ghost" th:href="@{/admin/services}">取消</a>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

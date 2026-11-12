@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/admin :: head('服务分类')}"></head>
+<body>
+<div class="admin-shell">
+    <aside th:replace="~{fragments/admin :: sidebar('categories')}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-head">
+            <div>
+                <h1>服务分类</h1>
+                <div class="sub" th:text="${'共 ' + categories.size() + ' 个分类 · 分类决定前台的服务筛选顺序'}">
+                    共 6 个分类
+                </div>
+            </div>
+        </div>
+
+        <div th:replace="~{fragments/layout :: flash}"></div>
+
+        <div class="panel mb-2">
+            <div class="flex-between mb-2">
+                <h3 class="mb-0" th:text="${form.id == null ? '新增分类' : '编辑分类'}">新增分类</h3>
+                <a class="text-sm" th:href="@{/admin/categories}" th:if="${form.id != null}">取消编辑</a>
+            </div>
+            <form th:action="@{/admin/categories/save}" th:object="${form}" method="post"
+                  class="grid" style="grid-template-columns:1.3fr 90px 80px 1.8fr auto;gap:12px;align-items:start;margin:0;">
+                <input type="hidden" th:field="*{id}">
+                <input type="hidden" th:field="*{status}">
+                <div class="field">
+                    <label class="form-label" for="catName">分类名称 <span class="req">*</span></label>
+                    <input class="form-control" type="text" id="catName" th:field="*{name}"
+                           placeholder="例如：日常保洁">
+                    <div class="form-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                </div>
+                <div class="field">
+                    <label class="form-label" for="catIcon">图标</label>
+                    <input class="form-control" type="text" id="catIcon" th:field="*{icon}"
+                           placeholder="🧹" maxlength="4">
+                </div>
+                <div class="field">
+                    <label class="form-label" for="catSort">排序</label>
+                    <input class="form-control" type="number" id="catSort" th:field="*{sortNo}" min="0">
+                </div>
+                <div class="field">
+                    <label class="form-label" for="catDesc">分类描述</label>
+                    <input class="form-control" type="text" id="catDesc" th:field="*{description}"
+                           placeholder="一句话说明该分类包含的服务">
+                    <div class="form-error" th:if="${#fields.hasErrors('description')}"
+                         th:errors="*{description}"></div>
+                </div>
+                <div class="field">
+                    <label class="form-label">&nbsp;</label>
+                    <button class="btn btn-primary" type="submit"
+                            th:text="${form.id == null ? '新增分类' : '保存修改'}">新增分类</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-wrap">
+            <table class="table" style="min-width:780px;">
+                <thead>
+                <tr>
+                    <th>图标</th>
+                    <th>分类名称</th>
+                    <th>描述</th>
+                    <th>排序</th>
+                    <th>服务数</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${categories}">
+                    <td style="font-size:20px;" th:text="${c.icon}">🧹</td>
+                    <td style="font-weight:650;white-space:nowrap;" th:text="${c.name}">日常保洁</td>
+                    <td class="text-sm text-muted" th:text="${c.description}">全屋清扫</td>
+                    <td class="num" th:text="${c.sortNo}">1</td>
+                    <td class="num" th:text="${countMap[c.id] != null ? countMap[c.id] : 0}">4</td>
+                    <td>
+                        <span class="badge" th:classappend="${c.status == 1 ? 'badge-success' : 'badge-muted'}"
+                              th:text="${c.status == 1 ? '启用' : '停用'}">启用</span>
+                    </td>
+                    <td>
+                        <div class="table-actions" style="flex-wrap:nowrap;">
+                            <a class="btn btn-ghost btn-sm" th:href="@{/admin/categories(editId=${c.id})}">编辑</a>
+                            <form th:action="@{/admin/categories/{id}/toggle(id=${c.id})}" method="post"
+                                  style="margin:0;">
+                                <button class="btn btn-ghost btn-sm" type="submit"
+                                        th:text="${c.status == 1 ? '停用' : '启用'}">停用</button>
+                            </form>
+                            <form th:action="@{/admin/categories/{id}/delete(id=${c.id})}" method="post"
+                                  style="margin:0;" data-confirm="确定删除该分类？分类下有服务时无法删除。">
+                                <button class="btn btn-ghost btn-sm" type="submit"
+                                        style="color:var(--danger);">删除</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${categories.isEmpty()}">
+                    <td colspan="7" class="text-center text-muted" style="padding:36px;">还没有分类，先新增一个</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

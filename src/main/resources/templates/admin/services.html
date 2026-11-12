@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/admin :: head('服务项目')}"></head>
+<body>
+<div class="admin-shell">
+    <aside th:replace="~{fragments/admin :: sidebar('services')}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-head">
+            <div>
+                <h1>服务项目</h1>
+                <div class="sub" th:text="${'共 ' + page.total + ' 个服务项目'}">共 14 个服务项目</div>
+            </div>
+            <a class="btn btn-primary btn-sm" th:href="@{/admin/services/new}">+ 新增服务</a>
+        </div>
+
+        <div th:replace="~{fragments/layout :: flash}"></div>
+
+        <div class="panel mb-2">
+            <form method="get" th:action="@{/admin/services}" class="filter-bar" style="margin-bottom:0;">
+                <select class="form-control" name="categoryId" data-auto-submit>
+                    <option value="">全部分类</option>
+                    <option th:each="c : ${categories}" th:value="${c.id}"
+                            th:selected="${categoryId != null and categoryId == c.id}"
+                            th:text="${c.name}">日常保洁</option>
+                </select>
+                <select class="form-control" name="status" data-auto-submit>
+                    <option value="">全部状态</option>
+                    <option value="1" th:selected="${status != null and status == 1}">已上架</option>
+                    <option value="0" th:selected="${status != null and status == 0}">已下架</option>
+                </select>
+                <input class="form-control grow" type="search" name="keyword" th:value="${keyword}"
+                       placeholder="搜索服务名称 / 副标题">
+                <button class="btn btn-primary" type="submit">搜索</button>
+                <a class="btn btn-ghost" th:href="@{/admin/services}">重置</a>
+            </form>
+        </div>
+
+        <div class="table-wrap">
+            <table class="table" style="min-width:900px;">
+                <thead>
+                <tr>
+                    <th>服务项目</th>
+                    <th>分类</th>
+                    <th style="text-align:right;">价格</th>
+                    <th>时长</th>
+                    <th>销量</th>
+                    <th>评分</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="s : ${page.records}">
+                    <td>
+                        <div class="flex-gap" style="gap:10px;">
+                            <span class="order-thumb"
+                                  style="width:38px;height:38px;font-size:18px;border-radius:9px;"
+                                  th:text="${s.cover}">🧽</span>
+                            <div>
+                                <div style="font-weight:650;" th:text="${s.name}">日常保洁 3 小时</div>
+                                <div class="text-sm text-muted" th:text="${s.subtitle}">自带工具</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-sm" th:text="${categoryNameMap[s.categoryId]}">日常保洁</td>
+                    <td class="num" style="text-align:right;"
+                        th:text="${'¥' + s.priceText + ' / ' + s.priceUnit}">¥129 / 次</td>
+                    <td class="text-sm" th:text="${s.duration + ' 分钟'}">180 分钟</td>
+                    <td class="num" th:text="${s.sales}">1286</td>
+                    <td class="num" th:text="${s.rating}">4.9</td>
+                    <td>
+                        <span class="badge" th:classappend="${s.status == 1 ? 'badge-success' : 'badge-muted'}"
+                              th:text="${s.status == 1 ? '上架中' : '已下架'}">上架中</span>
+                    </td>
+                    <td>
+                        <div class="table-actions">
+                            <a class="btn btn-ghost btn-sm" th:href="@{/admin/services/{id}/edit(id=${s.id})}">编辑</a>
+                            <form th:action="@{/admin/services/{id}/toggle(id=${s.id})}" method="post"
+                                  style="margin:0;">
+                                <button class="btn btn-ghost btn-sm" type="submit"
+                                        th:text="${s.status == 1 ? '下架' : '上架'}">下架</button>
+                            </form>
+                            <a class="btn btn-ghost btn-sm" th:href="@{/services/{id}(id=${s.id})}" target="_blank">预览</a>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${page.records.size() == 0}">
+                    <td colspan="8" class="text-center text-muted" style="padding:40px;">没有符合条件的服务</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" th:if="${page.pages > 1}">
+            <a class="page-btn" th:classappend="${page.current <= 1 ? 'disabled' : ''}"
+               th:href="@{/admin/services(page=${page.current - 1}, categoryId=${categoryId}, keyword=${keyword}, status=${status})}">上一页</a>
+            <a class="page-btn" th:each="i : ${#numbers.sequence(1, page.pages)}"
+               th:classappend="${i == page.current ? 'active' : ''}"
+               th:href="@{/admin/services(page=${i}, categoryId=${categoryId}, keyword=${keyword}, status=${status})}"
+               th:text="${i}">1</a>
+            <a class="page-btn" th:classappend="${page.current >= page.pages ? 'disabled' : ''}"
+               th:href="@{/admin/services(page=${page.current + 1}, categoryId=${categoryId}, keyword=${keyword}, status=${status})}">下一页</a>
+        </div>
+    </main>
+</div>
+
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>

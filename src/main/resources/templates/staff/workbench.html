@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('接单工作台')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container">
+    <div class="page-head">
+        <div class="crumbs">
+            <span>接单工作台</span>
+        </div>
+        <div class="flex-between">
+            <div>
+                <h1>
+                    <span th:text="${currentUser.realName}">王秀兰</span>
+                    <span class="badge badge-primary" style="vertical-align:middle;font-size:.75rem;"
+                          th:text="${staff.jobType + ' · ' + staff.staffLevel}">保洁 · 金牌</span>
+                </h1>
+                <p class="section-sub"
+                   th:text="${'累计完成 ' + completedCount + ' 单 · 评分 ' + staff.rating + ' 分'}">
+                    累计完成 0 单
+                </p>
+            </div>
+            <span class="badge" th:classappend="${staff.available == 1 ? 'badge-success' : 'badge-muted'}"
+                  th:text="${staff.available == 1 ? '接单中' : '休息中'}">接单中</span>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <div class="grid grid-3 mb-3">
+        <div class="stat-card">
+            <div class="k">待上门服务</div>
+            <div class="v" th:text="${acceptedCount}">0</div>
+            <div class="delta">已接单，等待按约上门</div>
+        </div>
+        <div class="stat-card">
+            <div class="k">服务进行中</div>
+            <div class="v" th:text="${servingCount}">0</div>
+            <div class="delta">完成后请提交完工</div>
+        </div>
+        <div class="stat-card">
+            <div class="k">累计已完成</div>
+            <div class="v" th:text="${completedCount}">0</div>
+            <div class="delta">用户确认后计入</div>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <a class="tab" th:classappend="${tab == 'pool' ? 'active' : ''}"
+           th:href="@{/staff/workbench(tab='pool')}">接单大厅</a>
+        <a class="tab" th:classappend="${tab == 'mine' ? 'active' : ''}"
+           th:href="@{/staff/workbench(tab='mine')}">我的工单</a>
+    </div>
+
+    <div th:if="${tab == 'mine'}" class="chip-row mb-3">
+        <a class="chip" th:classappend="${status == null ? 'active' : ''}"
+           th:href="@{/staff/workbench(tab='mine')}">全部</a>
+        <a class="chip" th:classappend="${status == 'ACCEPTED' ? 'active' : ''}"
+           th:href="@{/staff/workbench(tab='mine', status='ACCEPTED')}">待上门</a>
+        <a class="chip" th:classappend="${status == 'SERVING' ? 'active' : ''}"
+           th:href="@{/staff/workbench(tab='mine', status='SERVING')}">服务中</a>
+        <a class="chip" th:classappend="${status == 'PENDING_CONFIRM' ? 'active' : ''}"
+           th:href="@{/staff/workbench(tab='mine', status='PENDING_CONFIRM')}">待用户确认</a>
+        <a class="chip" th:classappend="${status == 'COMPLETED' ? 'active' : ''}"
+           th:href="@{/staff/workbench(tab='mine', status='COMPLETED')}">已完成</a>
+    </div>
+
+    <div th:each="o : ${orders.records}" class="order-card">
+        <div class="order-head">
+            <span class="order-no" th:text="${'订单号 ' + o.orderNo}">订单号</span>
+            <span th:text="${'预约 ' + #temporals.format(o.appointmentDate, 'MM-dd') + ' ' + o.appointmentTime}">预约</span>
+            <span class="spacer"></span>
+            <span class="badge" th:classappend="${'badge-' + statusTones[o.status]}"
+                  th:text="${statusLabels[o.status]}">待接单</span>
+        </div>
+        <div class="order-body">
+            <div class="order-thumb" th:text="${#strings.substring(o.serviceName, 0, 1)}">日</div>
+            <div class="order-info">
+                <div class="order-name" th:text="${o.serviceName}">日常保洁 3 小时</div>
+                <div class="order-meta">
+                    <span th:text="${o.address}">阳光花园 501</span>
+                    <span th:text="${o.contactName + ' · ' + o.contactPhone}">张伟 · 138</span>
+                </div>
+                <div class="order-meta" style="margin-top:4px;" th:if="${o.remark != null and !o.remark.isEmpty()}">
+                    <span th:text="${'备注：' + o.remark}">备注</span>
+                </div>
+            </div>
+            <div class="order-side">
+                <div class="order-amount" th:text="${'¥' + #numbers.formatDecimal(o.amount, 1, 2)}">¥129.00</div>
+                <div class="order-actions">
+                    <form th:if="${tab == 'pool'}" th:action="@{/staff/orders/{id}/accept(id=${o.id})}"
+                          method="post" style="margin:0;">
+                        <button class="btn btn-primary btn-sm" type="submit">接单</button>
+                    </form>
+                    <form th:if="${o.status == 'ACCEPTED'}"
+                          th:action="@{/staff/orders/{id}/start(id=${o.id})}" method="post" style="margin:0;">
+                        <button class="btn btn-primary btn-sm" type="submit">开始服务</button>
+                    </form>
+                    <form th:if="${o.status == 'SERVING'}"
+                          th:action="@{/staff/orders/{id}/finish(id=${o.id})}" method="post" style="margin:0;"
+                          data-confirm="确认已完成本次服务并提交给用户确认？">
+                        <button class="btn btn-primary btn-sm" type="submit">提交完工</button>
+                    </form>
+                    <span class="badge badge-muted"
+                          th:if="${o.status == 'PENDING_CONFIRM'}">等待用户确认</span>
+                    <span class="badge badge-success" th:if="${o.status == 'COMPLETED'}">已完成</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="empty card" th:if="${orders.records.size() == 0}">
+        <div class="empty-icon">📭</div>
+        <h3 th:text="${tab == 'pool' ? '暂时没有待接订单' : '这里还没有工单'}">暂时没有待接订单</h3>
+        <p th:text="${tab == 'pool' ? '新订单会实时出现在这里，请稍后刷新' : '去接单大厅看看有没有合适的订单'}">新订单会实时出现</p>
+        <a class="btn btn-primary" th:href="@{/staff/workbench(tab='pool')}" th:if="${tab == 'mine'}">去接单大厅</a>
+    </div>
+
+    <div class="pagination" th:if="${orders.pages > 1}">
+        <a class="page-btn" th:classappend="${orders.current <= 1 ? 'disabled' : ''}"
+           th:href="@{/staff/workbench(page=${orders.current - 1}, tab=${tab}, status=${status})}">上一页</a>
+        <a class="page-btn" th:each="i : ${#numbers.sequence(1, orders.pages)}"
+           th:classappend="${i == orders.current ? 'active' : ''}"
+           th:href="@{/staff/workbench(page=${i}, tab=${tab}, status=${status})}" th:text="${i}">1</a>
+        <a class="page-btn" th:classappend="${orders.current >= orders.pages ? 'disabled' : ''}"
+           th:href="@{/staff/workbench(page=${orders.current + 1}, tab=${tab}, status=${status})}">下一页</a>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+</body>
+</html>
